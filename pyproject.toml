@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "pty-server"
+version = "0.1.0"
+description = ""
+authors = ["Yason Khaburzaniya <yason@hey.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+interactive-process = "^0.2.3"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.3.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
