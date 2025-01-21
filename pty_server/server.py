@@ -22,7 +22,8 @@ async def stream_output(process: InteractiveProcess, connection: ServerConnectio
     """
     while True:
         try:
-            output = process.read_nonblocking(timeout=1)
+            # This timeout controls how fast we are plucking data from command output
+            output = process.read_nonblocking(timeout=0.05)
             if output:
                 logger.info(f"Process output: {output.strip()}")
                 await connection.send(output)
@@ -32,7 +33,9 @@ async def stream_output(process: InteractiveProcess, connection: ServerConnectio
                     break
         except TimeoutError:
             # Give the event loop a chance to run
-            await asyncio.sleep(0.1)
+            # Should not use this timeout for anything else because it complicates things unnecessarily
+            # Just use the timeout on read to control how fast we pluck data
+            await asyncio.sleep(0.0)
         except (TerminatedProcessError, ReadWriteError) as exc:
             logger.info(f"End of process output: {exc}")
             break
@@ -76,7 +79,9 @@ async def handle_command(command: dict, process: InteractiveProcess, connection:
 
     # Actual command with an end marker so that we know when to stop streaming
     end_marker = command_end_marker(command_id)
-    shell_command = f"{command_text} && echo {end_marker}"
+    # For now we will produce the same end marker in both cases
+    # TODO: in the future should send an exit code with the done signal to let client know if command failed or not
+    shell_command = f"{command_text} && echo {end_marker} || echo {end_marker}"
     process.send_command(shell_command)
     logger.info(f"Sending to process command: {shell_command}")
 

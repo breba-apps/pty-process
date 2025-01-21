@@ -57,3 +57,16 @@ async def test_async_echo_variable(server, aclient):
     assert "Hello\r\n" in data
     assert "Completed test2\r\n" in data
 
+@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_async_failed_command(server, aclient):
+    payload = json.dumps({"command": "clear", "command_id": "test1"})
+    await aclient.send_message(payload)
+
+    data = ""
+    async for chunk in aclient.stream_response(timeout=0.1):
+        data += chunk
+
+    # We collected all the output from the two commands
+    assert "$ clear\r\n" in data
+    assert "Completed test1\r\n" in data
