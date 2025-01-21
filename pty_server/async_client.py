@@ -11,7 +11,7 @@ HOST = "127.0.0.1"
 logger = logging.getLogger(__name__)
 
 
-class AsyncWebSocketClient:
+class AsyncPtyClient:
     def __init__(self, uri: str = f"ws://{HOST}:{PORT}"):
         """
         :param uri: WebSocket server URI.
@@ -84,7 +84,7 @@ async def main():
     # Create our client pointing to the server’s WebSocket URI
     uri = f"ws://{HOST}:{PORT}"
 
-    async with AsyncWebSocketClient(uri) as client:
+    async with AsyncPtyClient(uri) as client:
         # Send a simple command to the server
         command = {"command": "pip install pexpect"}
         await client.send_message(json.dumps(command))

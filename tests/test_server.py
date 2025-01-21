@@ -3,7 +3,7 @@ import json
 import pytest_asyncio
 import pytest
 
-from pty_server.async_client import AsyncWebSocketClient
+from pty_server import AsyncPtyClient
 from pty_server.server import stop_server, start_websocket_server
 
 
@@ -18,7 +18,7 @@ async def server():
 
 @pytest_asyncio.fixture
 async def aclient():
-    async with AsyncWebSocketClient() as aclient:
+    async with AsyncPtyClient() as aclient:
         yield aclient
 
 
