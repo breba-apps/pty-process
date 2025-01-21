@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pty-server"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Yason Khaburzaniya <yason@hey.com>"]
 readme = "README.md"
