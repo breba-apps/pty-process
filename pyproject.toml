@@ -6,7 +6,7 @@ authors = ["Yason Khaburzaniya <yason@hey.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.10"
 interactive-process = "^0.2.3"
 websockets = "^14.1"
 
