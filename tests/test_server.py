@@ -23,7 +23,6 @@ async def aclient():
 
 
 @pytest.mark.asyncio
-@pytest.mark.integration
 async def test_async_echo_command(server, aclient):
     payload = json.dumps({"command": "echo Hello", "command_id": "test"})
     await aclient.send_message(payload)
@@ -38,7 +37,6 @@ async def test_async_echo_command(server, aclient):
 
 
 @pytest.mark.asyncio
-@pytest.mark.integration
 async def test_async_echo_variable(server, aclient):
     payload = json.dumps({"command": "export MY=Hello", "command_id": "test1"})
     await aclient.send_message(payload)
@@ -58,7 +56,6 @@ async def test_async_echo_variable(server, aclient):
     assert "Completed test2\r\n" in data
 
 @pytest.mark.asyncio
-@pytest.mark.integration
 async def test_async_failed_command(server, aclient):
     payload = json.dumps({"command": "clear", "command_id": "test1"})
     await aclient.send_message(payload)
