@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pty-server"
-version = "0.1.5"
+version = "0.1.6"
 description = ""
 authors = ["Yason Khaburzaniya <yason@hey.com>"]
 readme = "README.md"
@@ -25,3 +25,6 @@ asyncio_default_fixture_loop_scope = "function"
 markers = [
     "integration: marks the test as an integration test (deselect with '-m \"not integration\"')",
 ]
+
+[tool.poetry.scripts]
+pty-server = "pty_server.server:main"

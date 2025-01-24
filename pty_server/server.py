@@ -189,15 +189,14 @@ async def start_websocket_server():
         # Keep the server running indefinitely
         await asyncio.Future()  # block forever unless canceled externally
 
-
-if __name__ == "__main__":
+def main():
     # Configure logging
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(message)s",
         handlers=[
             logging.FileHandler("server.log"),  # Log to file
-            logging.StreamHandler()             # Log to console
+            logging.StreamHandler()  # Log to console
         ]
     )
 
@@ -205,3 +204,6 @@ if __name__ == "__main__":
         asyncio.run(start_websocket_server())
     except KeyboardInterrupt:
         logger.info("Keyboard interrupt received; shutting down.")
+
+if __name__ == "__main__":
+    main()
