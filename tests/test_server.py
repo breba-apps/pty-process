@@ -31,9 +31,9 @@ async def test_async_echo_command(server, aclient):
     async for chunk in aclient.stream_response(timeout=0.1):
         data += chunk
 
-    assert "$ echo Hello\r\n" in data
-    assert "Hello\r\n" in data
-    assert "Completed test\r\n" in data
+    assert "$ echo Hello\n" in data
+    assert "Hello\n" in data
+    assert "Completed test\n" in data
 
 
 @pytest.mark.asyncio
@@ -49,11 +49,11 @@ async def test_async_echo_variable(server, aclient):
         data += chunk
 
     # We collected all the output from the two commands
-    assert "$ export MY=Hello\r\n" in data
-    assert "Completed test1\r\n" in data
-    assert "$ echo $MY\r\n" in data
-    assert "Hello\r\n" in data
-    assert "Completed test2\r\n" in data
+    assert "$ export MY=Hello\n" in data
+    assert "Completed test1\n" in data
+    assert "$ echo $MY\n" in data
+    assert "Hello\n" in data
+    assert "Completed test2\n" in data
 
 @pytest.mark.asyncio
 async def test_async_failed_command(server, aclient):
@@ -65,5 +65,5 @@ async def test_async_failed_command(server, aclient):
         data += chunk
 
     # We collected all the output from the two commands
-    assert "$ clear\r\n" in data
-    assert "Completed test1\r\n" in data
+    assert "$ clear\n" in data
+    assert "Completed test1\n" in data

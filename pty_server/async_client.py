@@ -40,6 +40,18 @@ class PtyServerResponse:
                 self.status = STATUS_TIMEOUT
                 break
 
+    async def text(self, timeout=2):
+        data = ""
+        async for chunk in self.stream(timeout):
+            data += chunk
+        return data
+
+    def completed(self):
+        return self.status == STATUS_COMPLETED
+
+    def timedout(self):
+        return self.status == STATUS_TIMEOUT
+
 
 class AsyncPtyClient:
     def __init__(self, uri: str = f"ws://{HOST}:{PORT}"):
@@ -117,6 +129,14 @@ class AsyncPtyClient:
         """Called when exiting the 'async with' block."""
         await self.disconnect()
 
+    def __enter__(self):
+        """Called when entering the 'async with' block."""
+        asyncio.run(self.connect())
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Called when exiting the 'async with' block."""
+        asyncio.run(self.disconnect())
 
 async def main():
     # Create our client pointing to the server’s WebSocket URI

@@ -116,8 +116,6 @@ async def handle_websocket(connection: ServerConnection):
     logger.info(f"WebSocket connection from {client_address}")
 
     process = InteractiveProcess()
-    # Example: activate a virtual environment
-    process.send_command('. .venv/bin/activate')
 
     # Create a queue for incoming commands
     commands_queue = asyncio.Queue()

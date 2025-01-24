@@ -1,3 +1,3 @@
-from .async_client import AsyncPtyClient
+from .async_client import AsyncPtyClient, PtyServerResponse
 
-__all__ = ["AsyncPtyClient"]
+__all__ = ["AsyncPtyClient", "PtyServerResponse"]

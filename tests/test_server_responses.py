@@ -27,13 +27,11 @@ async def test_async_echo_command(server, aclient):
     response = await aclient.send_command("echo Hello")
     await asyncio.sleep(0.1)
 
-    data = ""
-    async for chunk in response.stream(timeout=1):
-        data += chunk
+    data = await response.text(0.01)
 
     assert response.status == STATUS_COMPLETED
-    assert "$ echo Hello\r\n" in data
-    assert "Hello\r\n" in data
+    assert "$ echo Hello\n" in data
+    assert "Hello\n" in data
 
 
 @pytest.mark.asyncio
@@ -41,39 +39,47 @@ async def test_async_echo_variable(server, aclient):
     response1 = await aclient.send_command("export MY=Hello")
     response2 = await aclient.send_command("echo $MY")
 
-    data = ""
-    async for chunk in response1.stream(timeout=0.1):
-        data += chunk
+    data = await response1.text(timeout=0.1)
     assert response1.status == STATUS_COMPLETED
-    assert "$ export MY=Hello\r\n" in data
+    assert "$ export MY=Hello\n" in data
 
-    data = ""
-    async for chunk in response2.stream(timeout=0.1):
-        data += chunk
+    data = await response2.text(timeout=0.1)
 
     assert response2.status == STATUS_COMPLETED
-    assert "$ echo $MY\r\n" in data
-    assert "Hello\r\n" in data
+    assert "$ echo $MY\n" in data
+    assert "Hello\n" in data
 
 @pytest.mark.asyncio
 async def test_async_failed_command(server, aclient):
     response = await aclient.send_command("clear")
 
-    data = ""
-    async for chunk in response.stream(timeout=0.1):
-        data += chunk
+    data = await response.text(timeout=0.1)
 
     assert response.status == STATUS_COMPLETED
-    assert "$ clear\r\n" in data
+    assert "$ clear\n" in data
 
 
 @pytest.mark.asyncio
 async def test_command_timeout(server, aclient):
     response = await aclient.send_command("sleep 5")
 
-    data = ""
-    async for chunk in response.stream(timeout=0.5):
-        data += chunk
+    data = await response.text(timeout=0.5)
 
     assert response.status == STATUS_TIMEOUT
     assert "$ sleep 5" in data
+
+@pytest.mark.asyncio
+async def test_no_venv(server, aclient):
+    await aclient.send_command('python3 -m venv .venv')
+    response = await aclient.send_command('VIRTUAL_ENV_DISABLE_PROMPT=1 . .venv/bin/activate')
+    data = await response.text()
+
+    assert response.completed()
+    assert "$ VIRTUAL_ENV_DISABLE_PROMPT=1 . .venv/bin/activate" in data
+
+    response = await aclient.send_command('echo Hello')
+    data = await response.text()
+
+    assert response.completed()
+    assert "echo Hello" in data
+    assert "venv" not in data
