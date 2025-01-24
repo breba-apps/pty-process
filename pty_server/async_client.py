@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import uuid
 
 import websockets
 
@@ -9,6 +10,35 @@ PORT = 44440
 HOST = "127.0.0.1"
 
 logger = logging.getLogger(__name__)
+
+STATUS_COMPLETED = "completed"
+STATUS_STREAMING = "streaming"
+STATUS_TIMEOUT = "timeout"
+
+
+class PtyServerResponse:
+    def __init__(self, websocket,command_id: str):
+        self.command_id = command_id
+        self.websocket = websocket
+        self.status = None
+
+    async def stream(self, timeout=2):
+        while True:
+            try:
+                data = await asyncio.wait_for(self.websocket.recv(), timeout=timeout)
+                if f"Completed {self.command_id}" in data:
+                    yield data.replace(f"Completed {self.command_id}", "")  # Remove the command end marker and keep the rest of the data
+                    self.status = STATUS_COMPLETED
+                    break
+                if data:
+                    self.status = STATUS_STREAMING
+                    yield data
+                else:
+                    self.status = STATUS_COMPLETED
+                    break
+            except asyncio.TimeoutError as e:
+                self.status = STATUS_TIMEOUT
+                break
 
 
 class AsyncPtyClient:
@@ -69,6 +99,14 @@ class AsyncPtyClient:
         except Exception as e:
             logger.error(f"Error sending message: {e}")
             return False
+
+    async def send_command(self, command: str):
+        command_id = str(uuid.uuid4())
+        command_directive = {"command": command, "command_id": command_id}
+        if await self.send_message(json.dumps(command_directive)):
+            return PtyServerResponse(self.websocket, command_id)
+        else:
+            return None
 
     async def __aenter__(self):
         """Called when entering the 'async with' block."""
