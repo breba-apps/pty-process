@@ -76,4 +76,4 @@ async def test_command_timeout(server, aclient):
         data += chunk
 
     assert response.status == STATUS_TIMEOUT
-    assert "$ sleep 1" in data
+    assert "$ sleep 2" in data
