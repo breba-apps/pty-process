@@ -68,11 +68,11 @@ async def test_async_failed_command(server, aclient):
 
 
 @pytest.mark.asyncio
-async def test_async_failed_command(server, aclient):
+async def test_command_timeout(server, aclient):
     response = await aclient.send_command("sleep 1")
 
     data = ""
-    async for chunk in response.stream(timeout=0.1):
+    async for chunk in response.stream(timeout=0.5):
         data += chunk
 
     assert response.status == STATUS_TIMEOUT
