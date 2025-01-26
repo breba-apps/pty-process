@@ -70,6 +70,7 @@ class AsyncPtyClient:
         except Exception as e:
             logger.error(f"Error during connection: {e}")
             self.websocket = None
+            raise e
 
     async def disconnect(self):
         """Close the WebSocket connection."""
