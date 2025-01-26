@@ -129,6 +129,7 @@ async def handle_websocket(connection: ServerConnection):
         while True:
             # Receive a JSON message from the client
             message = await connection.recv()
+            logger.info(f"Received: {message}")
             if not message:
                 break
 
@@ -181,7 +182,7 @@ async def start_websocket_server():
     logger.info(f"Starting WebSocket server on 0.0.0.0:{PORT}")
 
     # Use the modern "async with" syntax. This is the recommended approach ≥ websockets 14.
-    async with serve(handle_websocket, "0.0.0.0", PORT) as server:
+    async with serve(handle_websocket, "0.0.0.0", PORT, ping_timeout=None) as server:
         ws_server = server  # Keep a reference so we can close it later
         logger.info("Server started, serving until stopped...")
         # Keep the server running indefinitely
