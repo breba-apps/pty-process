@@ -130,14 +130,6 @@ class AsyncPtyClient:
         """Called when exiting the 'async with' block."""
         await self.disconnect()
 
-    def __enter__(self):
-        """Called when entering the 'async with' block."""
-        asyncio.run(self.connect())
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        """Called when exiting the 'async with' block."""
-        asyncio.run(self.disconnect())
 
 async def main():
     # Create our client pointing to the server’s WebSocket URI
