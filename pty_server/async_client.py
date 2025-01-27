@@ -4,6 +4,7 @@ import logging
 import uuid
 
 import websockets
+from websockets import ConnectionClosedOK
 
 # Adjust if needed; or use your existing constant
 PORT = 44440
@@ -38,6 +39,9 @@ class PtyServerResponse:
                     break
             except asyncio.TimeoutError as e:
                 self.status = STATUS_TIMEOUT
+                break
+            except ConnectionClosedOK as e:
+                self.status = STATUS_COMPLETED  # This happens when server closes the connection
                 break
 
     async def text(self, timeout=2):
