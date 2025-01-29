@@ -72,7 +72,8 @@ class AsyncPtyClient:
             self.websocket = await websockets.connect(self.uri)
             logger.info("Connection established.")
         except Exception as e:
-            logger.error(f"Error during connection: {e}")
+            # Set this message to debug level
+            logger.debug(f"Error during connection: {e}")
             self.websocket = None
             raise e
 
