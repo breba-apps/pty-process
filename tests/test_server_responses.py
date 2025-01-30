@@ -76,13 +76,13 @@ async def test_command_timeout(server, aclient):
 async def test_no_venv(server, aclient):
     await aclient.send_command('python3 -m venv .venv')
     response = await aclient.send_command('VIRTUAL_ENV_DISABLE_PROMPT=1 . .venv/bin/activate')
-    data = await response.text()
+    data = await response.text(6)
 
     assert response.completed()
     assert "$ VIRTUAL_ENV_DISABLE_PROMPT=1 . .venv/bin/activate" in data
 
     response = await aclient.send_command('echo Hello')
-    data = await response.text()
+    data = await response.text(6)
 
     assert response.completed()
     assert "echo Hello" in data
