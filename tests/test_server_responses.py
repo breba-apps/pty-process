@@ -14,6 +14,10 @@ async def server():
     yield
     await stop_server()
     async_server.cancel()
+    try:
+        await async_server
+    except asyncio.CancelledError:
+        pass  # expected
 
 
 @pytest_asyncio.fixture

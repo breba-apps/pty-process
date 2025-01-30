@@ -14,13 +14,16 @@ async def server():
     yield
     await stop_server()
     async_server.cancel()
+    try:
+        await async_server
+    except asyncio.CancelledError:
+        pass  # expected
 
 
 @pytest_asyncio.fixture
 async def aclient():
     async with AsyncPtyClient() as aclient:
         yield aclient
-
 
 @pytest.mark.asyncio
 async def test_async_echo_command(server, aclient):
