@@ -1,23 +1,10 @@
 import asyncio
-import pytest_asyncio
+
 import pytest
+import pytest_asyncio
 
 from pty_server import AsyncPtyClient
 from pty_server.async_client import STATUS_COMPLETED, STATUS_TIMEOUT
-from pty_server.server import stop_server, start_websocket_server
-
-
-@pytest_asyncio.fixture
-async def server():
-    async_server = asyncio.create_task(start_websocket_server())
-    await asyncio.sleep(1)
-    yield
-    await stop_server()
-    async_server.cancel()
-    try:
-        await async_server
-    except asyncio.CancelledError:
-        pass  # expected
 
 
 @pytest_asyncio.fixture
@@ -53,6 +40,7 @@ async def test_async_echo_variable(server, aclient):
     assert "$ echo $MY\n" in data
     assert "Hello\n" in data
 
+
 @pytest.mark.asyncio
 async def test_async_failed_command(server, aclient):
     response = await aclient.send_command("clear")
@@ -71,6 +59,7 @@ async def test_command_timeout(server, aclient):
 
     assert response.status == STATUS_TIMEOUT
     assert "$ sleep 5" in data
+
 
 @pytest.mark.asyncio
 async def test_no_venv(server, aclient):

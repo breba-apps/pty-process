@@ -12,7 +12,8 @@ PORT = 44440
 
 logger = logging.getLogger(__name__)
 # We'll keep a reference to the running server so we can stop it via commands
-ws_server = None
+ws_server: asyncio.Server | None = None
+stop_event: asyncio.Event | None = None
 
 
 async def stream_output(process: InteractiveProcess, connection: ServerConnection, end_marker: str):
@@ -89,18 +90,16 @@ async def handle_command(command: dict, process: InteractiveProcess, connection:
     await stream_output(process, connection, end_marker)
 
 
-async def stop_server():
+def stop_server():
     """
     Closes the global WebSocket server, if running.
     """
-    global ws_server
-    if ws_server is not None:
-        logger.info("Closing server...")
-        ws_server.close()
-        # Wait for it to shut down gracefully
-        await ws_server.wait_closed()
-        ws_server = None
-        logger.info("Server closed.")
+    global stop_event
+    if stop_event is not None:
+        stop_event.set()
+    else:
+        logger.error("Server is not running, or stop mechanism is broken")
+
 
 
 async def handle_websocket(connection: ServerConnection):
@@ -179,14 +178,22 @@ async def start_websocket_server():
     Runs until stopped by `stop_server()` or external shutdown.
     """
     global ws_server
+    global stop_event
     logger.info(f"Starting WebSocket server on 0.0.0.0:{PORT}")
 
     # Use the modern "async with" syntax. This is the recommended approach ≥ websockets 14.
     async with serve(handle_websocket, "0.0.0.0", PORT, ping_timeout=None) as server:
         ws_server = server  # Keep a reference so we can close it later
+        stop_event = asyncio.Event()
         logger.info("Server started, serving until stopped...")
         # Keep the server running indefinitely
-        await asyncio.Future()  # block forever unless canceled externally
+        await stop_event.wait()
+
+        logger.info("Stopping server...")
+        ws_server = None
+        stop_event = None
+
+    logger.info("Server stopped")
 
 def main():
     # Configure logging
