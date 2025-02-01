@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import uuid
+import time
 
 import websockets
 from websockets import ConnectionClosedOK
@@ -65,17 +66,22 @@ class AsyncPtyClient:
         self.uri = uri
         self.websocket = None
 
-    async def connect(self):
+    async def connect(self, max_wait_time=5):
         """Establish a WebSocket connection to the server."""
-        try:
-            logger.info(f"Connecting to {self.uri} ...")
-            self.websocket = await websockets.connect(self.uri)
-            logger.info("Connection established.")
-        except Exception as e:
-            # Set this message to debug level
-            logger.debug(f"Error during connection: {e}")
-            self.websocket = None
-            raise e
+        start_time = time.monotonic()
+        while True:
+            try:
+                logger.info(f"Connecting to {self.uri} ...")
+                self.websocket = await websockets.connect(self.uri)
+                logger.info("Connection established.")
+                break
+            except Exception as e:
+                elapsed = time.monotonic() - start_time
+                if elapsed >= max_wait_time:
+                    logger.debug("Exceeded maximum wait time. Giving up.")
+                    raise Exception("Max wait time exceeded while trying to connect.") from e
+                # Wait for 0.1 seconds before trying again.
+                await asyncio.sleep(0.1)
 
     async def disconnect(self):
         """Close the WebSocket connection."""
