@@ -59,16 +59,18 @@ class PtyServerResponse:
 
 
 class AsyncPtyClient:
-    def __init__(self, uri: str = f"ws://{HOST}:{PORT}"):
+    def __init__(self, uri: str = f"ws://{HOST}:{PORT}", max_connect_time=5):
         """
         :param uri: WebSocket server URI.
         """
         self.uri = uri
         self.websocket = None
+        self.max_connect_time = max_connect_time
 
     async def connect(self, max_wait_time=5):
         """Establish a WebSocket connection to the server."""
         start_time = time.monotonic()
+        max_wait_time = max_wait_time or self.max_connect_time
         while True:
             try:
                 logger.info(f"Connecting to {self.uri} ...")
