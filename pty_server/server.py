@@ -172,7 +172,7 @@ async def handle_websocket(connection: ServerConnection):
         logger.info("WebSocket connection closed.")
 
 
-async def start_websocket_server():
+async def start_websocket_server(server_ready: asyncio.Event = None):
     """
     Starts the WebSocket server on the specified port with the new asyncio implementation.
     Runs until stopped by `stop_server()` or external shutdown.
@@ -186,6 +186,8 @@ async def start_websocket_server():
         ws_server = server  # Keep a reference so we can close it later
         stop_event = asyncio.Event()
         logger.info("Server started, serving until stopped...")
+        if server_ready:
+            server_ready.set()
         # Keep the server running indefinitely
         await stop_event.wait()
 
