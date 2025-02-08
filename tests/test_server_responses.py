@@ -78,7 +78,3 @@ async def test_no_venv(server, aclient):
     assert response.completed()
     assert "echo Hello" in data
     assert "venv" not in data
-
-    path = Path(".venv")
-    if path.exists() and path.is_dir():
-        shutil.rmtree(path)
