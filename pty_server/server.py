@@ -142,7 +142,7 @@ async def handle_websocket(connection: ServerConnection):
             if cmd == "quit":
                 logger.info("Quit command received; shutting down...")
                 await connection.send("Server will shut down now.")
-                await stop_server()
+                stop_server()
                 break
             elif cmd:
                 # Schedule the command for execution
@@ -152,8 +152,9 @@ async def handle_websocket(connection: ServerConnection):
             input_text = data.get("input")
             if input_text:
                 logger.info(f"Sending user input to process: {input_text}")
+                # TODO: this goes away when we turn "echo" on in the process
                 # Echo the input back for terminal-like behavior
-                await connection.send(input_text)
+                await connection.send(input_text + "\n")
                 # Send input to the process
                 process.send_command(input_text)
 

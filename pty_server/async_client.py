@@ -29,7 +29,7 @@ class PtyServerResponse:
             try:
                 data = await asyncio.wait_for(self.websocket.recv(), timeout=timeout)
                 if f"Completed {self.command_id}" in data:
-                    yield data.replace(f"Completed {self.command_id}", "")  # Remove the command end marker and keep the rest of the data
+                    yield data.replace(f"Completed {self.command_id}\n", "")  # Remove the command end marker and keep the rest of the data
                     self.status = STATUS_COMPLETED
                     break
                 if data:
@@ -119,12 +119,16 @@ class AsyncPtyClient:
             raise ConnectionError("Not connected to the server. Cannot send message.")
 
         try:
-            logger.info(f"Sending: {message}")
+            logger.info(f"Sending to Server: {message}")
             await self.websocket.send(message)
             return True
         except Exception as e:
             logger.error(f"Error sending message: {e}")
             return False
+
+    async def send_input(self, input_text: str):
+        instruction = json.dumps({"input": input_text})
+        await self.send_message(instruction)
 
     async def send_command(self, command: str):
         command_id = str(uuid.uuid4())
