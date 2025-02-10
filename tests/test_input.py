@@ -21,8 +21,8 @@ async def test_async_input(server, aclient):
     assert response.timedout()
     assert "$ read -p \"Please enter today's date(YYYY-MM-DD): \" user_date\n" in data
 
-    await aclient.send_input("2022-01-01")
-    await asyncio.sleep(1)
+    success = await aclient.send_input("2022-01-01")
+    assert success
     data = await response.text(timeout=1)
     assert response.completed()
     assert "2022-01-01\n" in data

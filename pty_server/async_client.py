@@ -128,7 +128,7 @@ class AsyncPtyClient:
 
     async def send_input(self, input_text: str):
         instruction = json.dumps({"input": input_text})
-        await self.send_message(instruction)
+        return await self.send_message(instruction)
 
     async def send_command(self, command: str):
         command_id = str(uuid.uuid4())
