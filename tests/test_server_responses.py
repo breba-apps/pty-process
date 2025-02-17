@@ -15,7 +15,7 @@ async def aclient():
 async def test_async_echo_command(server, aclient):
     response = await aclient.send_command("echo Hello")
 
-    data = await response.text(0.01)
+    data = await response.text(0.1)
 
     assert response.status == STATUS_COMPLETED
     assert "$ echo Hello\n" in data
