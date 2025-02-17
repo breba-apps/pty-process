@@ -1,12 +1,13 @@
 import asyncio
 import json
 import logging
-import shlex
 
 from websockets.asyncio.server import serve, ServerConnection
 from websockets.exceptions import ConnectionClosed
 
 from interactive_process import InteractiveProcess, TerminatedProcessError, ReadWriteError
+
+from pty_server.buffer import MatchingTextBuffer
 
 PORT = 44440
 
@@ -21,6 +22,7 @@ async def stream_output(process: InteractiveProcess, connection: ServerConnectio
     Continuously reads from the InteractiveProcess and sends its output
     to the WebSocket until `end_marker` is encountered or the process ends.
     """
+    buffer = MatchingTextBuffer(end_marker)
     while True:
         try:
             # This timeout controls how fast we are plucking data from command output
@@ -29,7 +31,7 @@ async def stream_output(process: InteractiveProcess, connection: ServerConnectio
                 logger.info(f"Process output: {output.strip()}")
                 await connection.send(output)
 
-                if end_marker in output:
+                if buffer.find_match(output):
                     logger.info("Breaking on end marker")
                     break
         except TimeoutError:
@@ -72,19 +74,10 @@ async def handle_command(command: dict, process: InteractiveProcess, connection:
     command_text = command.get("command")
     command_id = command.get("command_id", "unknown")
 
-    # Echo the command first (shell-escaped)
-    escaped_command = shlex.quote(command_text)
-    echo_text = f"echo $ {escaped_command}\n"
-    process.send_command(echo_text)
-    logger.info(f"Sending to process echo: {echo_text}")
-
     # Actual command with an end marker so that we know when to stop streaming
     end_marker = command_end_marker(command_id)
-    # For now we will produce the same end marker in both cases
-    # TODO: in the future should send an exit code with the done signal to let client know if command failed or not
-    shell_command = f"{command_text} && echo {end_marker} || echo {end_marker}"
-    process.send_command(shell_command)
-    logger.info(f"Sending to process command: {shell_command}")
+    logger.info(f"Sending to process command: {command_text}, with endmarker: {end_marker}")
+    process.send_command(command_text, end_marker)
 
     # Stream the output back to the client until we see the end marker
     await stream_output(process, connection, end_marker)
@@ -114,7 +107,9 @@ async def handle_websocket(connection: ServerConnection):
     client_address = connection.remote_address
     logger.info(f"WebSocket connection from {client_address}")
 
-    process = InteractiveProcess()
+    process = InteractiveProcess.with_random_prompt()
+    # TODO: exception from flush_output should be handled
+    flushed = process.flush_output()
 
     # Create a queue for incoming commands
     commands_queue = asyncio.Queue()
@@ -152,11 +147,7 @@ async def handle_websocket(connection: ServerConnection):
             input_text = data.get("input")
             if input_text:
                 logger.info(f"Sending user input to process: {input_text}")
-                # TODO: this goes away when we turn "echo" on in the process
-                # Echo the input back for terminal-like behavior
-                await connection.send(input_text + "\n")
-                # Send input to the process
-                process.send_command(input_text)
+                process.send_input(input_text)
 
     except ConnectionClosed as exc:
         logger.info(f"Client {client_address} disconnected: {exc}")
