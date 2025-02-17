@@ -28,7 +28,7 @@ class PtyServerResponse:
         self.status = None
 
     async def stream(self, timeout=2):
-        end_marker = f"Completed {self.command_id}{os.linesep}"
+        end_marker = f"Completed {self.command_id}" + os.linesep # add line separator because we want to get rid of it
         buffer = MatchingTextBuffer(end_marker)
         while True:
             try:
