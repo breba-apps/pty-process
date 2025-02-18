@@ -1,4 +1,3 @@
-import asyncio
 from typing import AsyncGenerator
 
 import pytest
@@ -31,7 +30,9 @@ async def test_async_input(server, aclient):
     data = await response.text(timeout=0.1)
 
     assert response.completed()
-    assert data == "$ echo Hello there $user_date\nHello there 2022-01-01\n"
+    shell_prompt, data = data.split("$ ", 1)
+    assert len(shell_prompt) == 13  # the prompt is randomly generated
+    assert data == "echo Hello there $user_date\nHello there 2022-01-01\n"
     assert "\n\n" not in data
 
 

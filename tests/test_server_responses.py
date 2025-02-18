@@ -1,7 +1,3 @@
-import asyncio
-import shutil
-from pathlib import Path
-
 import pytest
 import pytest_asyncio
 
@@ -18,9 +14,8 @@ async def aclient():
 @pytest.mark.asyncio
 async def test_async_echo_command(server, aclient):
     response = await aclient.send_command("echo Hello")
-    await asyncio.sleep(0.1)
 
-    data = await response.text(0.01)
+    data = await response.text(0.1)
 
     assert response.status == STATUS_COMPLETED
     assert "$ echo Hello\n" in data

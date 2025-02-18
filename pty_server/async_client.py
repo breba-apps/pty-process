@@ -1,11 +1,14 @@
 import asyncio
 import json
 import logging
+import os
 import uuid
 import time
 
 import websockets
 from websockets import ConnectionClosedOK
+
+from pty_server.buffer import MatchingTextBuffer
 
 # Adjust if needed; or use your existing constant
 PORT = 44440
@@ -25,16 +28,21 @@ class PtyServerResponse:
         self.status = None
 
     async def stream(self, timeout=2):
+        end_marker = f"Completed {self.command_id}" + os.linesep # add line separator because we want to get rid of it
+        buffer = MatchingTextBuffer(end_marker)
         while True:
             try:
                 data = await asyncio.wait_for(self.websocket.recv(), timeout=timeout)
-                if f"Completed {self.command_id}" in data:
-                    yield data.replace(f"Completed {self.command_id}\n", "")  # Remove the command end marker and keep the rest of the data
-                    self.status = STATUS_COMPLETED
-                    break
                 if data:
-                    self.status = STATUS_STREAMING
-                    yield data
+                    # Append the new data to the buffer, because endmarker can be split into multiple chunks
+                    if buffer.find_match(data):
+                        yield data.replace(end_marker,
+                                           "")  # Remove the command end marker and keep the rest of the data
+                        self.status = STATUS_COMPLETED
+                        break
+                    else:
+                        self.status = STATUS_STREAMING
+                        yield data
                 else:
                     self.status = STATUS_COMPLETED
                     break
